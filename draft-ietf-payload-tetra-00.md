@@ -9,10 +9,10 @@
     Title = "RTP Payload Format for the TETRA Audio Codec"
     abbrev = "RTP Payload Format for TETRA Audio codec"
     category = "std"
-    docName = "draft-df-stecker-expertenforum-payload-tetra-00"
+    docName = "draft-ietf-payload-tetra-00"
     ipr= "trust200902"
     area = "Internet"
-    date = 2018-01-09T20:00:00Z
+    date = 2018-04-22T19:00:00Z
     workgroup = "payload"
 
     [pi]
@@ -83,13 +83,13 @@
 
 .# Abstract
 
-This document specifies a Real-time Transport Protocol (RTP) payload format to be used for TETRA encoded speech signals. The payload format is designed to be able to interoperate with existing TETRA transport formats on non-IP networks. This version of the document does not specify a file format for transport of TETRA speech data in storage mode applications such as email as would be required by the IETF. A media type registration is included, specifying the use of the RTP payload format and the storage format.  
+This document specifies a Real-time Transport Protocol (RTP) payload format for TETRA encoded speech signals. The payload format is designed to be able to interoperate with existing TETRA transport formats on non-IP networks. A media type registration is included, specifying the use of the RTP payload format and the storage format.
 
 {mainmatter}
 
 # Introduction
 
-This document specifies the payload format for packetization of TErrestial Trunked Radio (TETRA) encoded speech signals into the Real-time Transport Protocol (RTP) [@!RFC3550]. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section [](#MediaFormatBackground).
+This document specifies the payload format for packetization of TErrestial Trunked Radio (TETRA) encoded speech signals [@!ETSI-TETRA-Codec] into the Real-time Transport Protocol (RTP) [@!RFC3550]. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section [](#MediaFormatBackground).
 
 The payload format itself is specified in Section [](#PayloadFormat). 
 
@@ -107,10 +107,10 @@ The byte order used in this document is network byte order, i.e., the most signi
 Best current practices for writing an RTP payload format specification were followed [@RFC2736] updated with [@RFC8088].
 
 # Media Format Background {#MediaFormatBackground}
-The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of theses 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. For E1 lines there are two optional formats defined [3], the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats defer mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
+The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of theses 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. Codec payload serialisation within the traditional circuit mode based TETRA system is specified for TDM lines with 2048 kBit/s. For this purpose two optional formats are defined [@!ETSI-TETRA-Codec], the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats defer mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
 
 # Payload format {#PayloadFormat}
-The RTP payload format is designed in such a way that it can carry the information needed to map the FSTE and OSTE format from [@!ETSI-TETRA-ISI]. The RTP format is defined such that both of the independent sub-blocks can be transferred separately or together within one RTP frame. Both of them contain the same information in terms of control bits - the information is propagated redundantly. This redundancy is driven by on one hand to simplify the encoding process in direction from E1 to RTP on the other to provide the option to go for either 30ms or 60ms packet size. The redundant information  **SHALL** be propagated consistently equal - otherwise the behavior of the receiver is unspecified.
+The RTP payload format is designed in such a way that it can carry the information needed to map the FSTE and OSTE format from [@!ETSI-TETRA-ISI]. The RTP format is defined such that both of the independent sub-blocks can be transferred separately or together within one RTP packet. Both of them contain the same information in terms of control bits - the information is propagated redundantly. This redundancy is driven by on one hand to simplify the encoding process in direction from E1 to RTP on the other to provide the option to go for either 30ms or 60ms packet size. The redundant information  **SHALL** be propagated consistently equal - otherwise the behavior of the receiver is unspecified.
 The payload format is chosen such that the TETRA data bits are octet aligned. 
 
 ## RTP Header Usage
@@ -122,6 +122,22 @@ The payload length of TETRA is an integer number of octets; therefore, no paddin
 The timestamp, sequence number, and marker bit (M) of the RTP header are used in accordance with Section 4.1 of [@!RFC3551].
 
 The RTP payload type for Tetra is to be assigned dynamically.
+
+## Payload layout
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                                           D(137)|  S          |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 ## Payload Header
 
@@ -167,7 +183,7 @@ Value|Sub block 1      |Sub block 2
 NOTE: The meaning of C4 and C5 is outside the scope of the present
 
 ### C bit: Failed Crypto operation indication
-This bit may be set to "1" if an encryption or a decryption operation could not be performed successfully for the specific half-block. Consequently, the encryption status of the half-block audio data is unknown. If a receiver decides to forward the TETRA audio data to OSTE or FSTE or to directly hand over the TETRA audio data to a TETRA audio decoder, the contained audio might be scrambled - depending if the audio originally was generated as a plain-override half-block or as an encrypted half-block.
+This bit may be set to "1" if a decryption (encrypted audio along the circuit switched mobile network, decryption at the RTP sender forwarding this audio) operation could not be performed successfully for the specific half-block. Consequently, the encryption status of the half-block audio data is unknown. Implementation of an RTP receiver has to take into account "C bit" when forwarding such TETRA audio data (either to a decoder directly or via TETRA infrastructure to a TETRA mobile unit), the contained audio might be scrambled - depending if the audio originally was generated as a plain-override half-block or as an encrypted half-block.
 
 ### FRAME_NR: FN (5 bits)
 Those bits contain an uplink frame number as defined in table 8 of [@!ETSI-TETRA-ISI].
@@ -201,23 +217,6 @@ Reference [@!ETSI-TETRA-ISI] contains the definition for the generation of the c
 
 The payload itself contains TETRA ACELP coded speech information encoded according to table 4 of [@!ETSI-TETRA-Codec].
 
-
-## Payload layout
-
-
-     0                   1                   2                   3
-     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                                                               |
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                                                               |
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                                                               |
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                                           D(137)|  S          |
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 # Payload example
 The following example shows how a first and a consecutive 30 ms frame 
@@ -254,13 +253,15 @@ Both halves of information contain exact the same CTRL bits
 
 Tetra uses a fixed bitrate which cannot be adjusted at all. 
 
+Since UDP does not provide congestion control, applications that use RTP over UDP **SHOULD** implement their own congestion control above the UDP layer RFC8085 [@!RFC8085] and **MAY** also implement a transport circuit breaker RFC8083 [@!RFC8083].  Work in the RMCAT working group [@RMCAT] describes the interactions and conceptual interfaces necessary between the application components that relate to congestion control, including the RTP layer, the higher-level media codec control layer, and the lower-level transport interface, as well as components dedicated to congestion control functions.
+
 Congestion control for RTP  **SHALL** be used in accordance with RFC 3550 [@!RFC3550], and with any applicable RTP profile; e.g., RFC 3551 [@!RFC3551]. An additional requirement if best-effort service is being used is: users of this payload format  **MUST** monitor packet loss to ensure that the packet loss rate is within acceptable parameters.
 
 # Payload Format Parameters
 
-This RTP payload format is identified using one media subtype (audio/TETRA) which is registered in accordance with RFC 4855 [@RFC4855] and using the template of RFC 4288 [@RFC4288].
+This RTP payload format is identified using one media subtype (audio/TETRA) which is registered in accordance with RFC 4855 [@RFC4855] and per media type registration template from RFC 6838 [@RFC6838].
 
-## Media Type Definition
+## Media Type Definition {#Media-Type-Definition}
 
 The media type for the TETRA codec is expected to be allocated from the IETF tree once this draft turns into an RFC. This media type registration covers both real-time transfer via RTP and non-real-time transfers via stored files.
 
@@ -283,14 +284,9 @@ maxptime:
 ptime:
 :   see RFC 4566 [@!RFC4566].
 
-drgw-fe:
-:   As long as there is no official RTP payload definition from IETF 
-this proprietary parameter ("digital radio gateway forum of experts") is 
-marked with the only possible value 1. It marks the session to be 
-established according to this specification.
-
 Security considerations:
-See Section 7 of RFC 4867 [@RFC4867].
+:   See Section [] (#Security) of RFC XXXX.
+      [RFC Editor: Upon publication as an RFC, please replace "XXXX" with the number assigned to this document and remove this note.]
 
 Interoperability considerations:
 
@@ -304,22 +300,24 @@ Intended usage:
 :  COMMON
 
 # Mapping to SDP
-The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol (SDP)[4], which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
+The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol [@!RFC4566], which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
 
 Media Type name:
 :   audio
 
 Media subtype name:
 :   TETRA
+
 Required parameters:
 :   none
+
 Optional parameters:
 :   none
 
-Mapping MIME Parameters into SDP
-:   The information carried in the MIME media type specification has a specific mapping to fields in the Session Description Protocol [@!RFC4566], which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
-  -  The MIME type ("audio") goes in SDP "m=" as the media name.
-  -  The MIME subtype (payload format name) goes in SDP "a=rtpmap" as the encoding name. The RTP clock rate in "a=rtpmap" MUST be 8000.
+Mapping Parameters into SDP
+:   The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol [@!RFC4566], which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
+  -  The media type ("audio") goes in SDP "m=" as the media name.
+  -  The media subtype (payload format name) goes in SDP "a=rtpmap" as the encoding name. The RTP clock rate in "a=rtpmap" MUST be 8000.
   -  The parameters "ptime" and "maxptime" go in the SDP "a=ptime" and "a=maxptime" attributes, respectively.
   -  Any remaining parameters go in the SDP "a=fmtp" attribute by copying them directly from the media type parameter string as a semicolon-separated list of parameter=value pairs.
 
@@ -329,28 +327,28 @@ Here is an example SDP session of usage of TETRA:
     a=rtpmap:99 TETRA/8000
     a=maxptime:60
     a=ptime:60
-    a=fmtp:99 
 
 ## Offer/Answer Considerations
 
 The following considerations apply when using SDP Offer-Answer procedures to negotiate the use of TETRA payload in RTP:
 
-  -  In most cases, the parameters "maxptime" and "ptime" will not affect interoperability; however, the setting of the parameters can affect the performance of the application. The SDP offer-answer handling of the "ptime" parameter is described in RFC3264 [@RFC3264]. The "maxptime" parameter  **MUST** be handled in the same way.
+  -  In most cases, the parameters "maxptime" and "ptime" will not affect interoperability; however, the setting of the parameters can affect the performance of the application. The SDP offer-answer handling of the "ptime" and "maxptime" parameter is described in RFC3264 [@RFC3264].
+  - Integer multiples of 30ms **SHALL** be used for ptime.  It is recommended to use packet size of 60ms. Even if there is no good reason why not doing so, there is no need that ptime and maxptime parameters are negotiated symmetrically.
   -  Any unknown parameter in an offer  **SHALL** be removed in the answer.
 
 ##  Declarative SDP Considerations
 
-For declarative media, the "ptime" and "maxptime" parameter specifies the possible variants used by the sender.  Multiple TETRA rtpmap values **MAY** be used to convey TETRA-coded voice at different packet rates.  The receiver can then select an appropriate MELPe codec by using one of the rtpmap values.
+For declarative media, the "ptime" and "maxptime" parameter specifies the possible variants used by the sender.
 
 # IANA Considerations
 
-This memo requests that IANA registers [audio/TETRA]. The media type is also requested to be added to the IANA registry for "RTP Payload Format MIME types" (http://www.iana.org/assignments/rtp-parameters).
+This memo requests that IANA registers [audio/TETRA] from section [](#Media-Type-Definition). The media type is also requested to be added to the IANA registry for "RTP Payload Format MIME types" (http://www.iana.org/assignments/rtp-parameters).
 
-# Security Considerations
+# Security Considerations {#Security}
 
 RTP packets using the payload format defined in this specification are subject to the security considerations discussed in the RTP specification [@!RFC3550] , and in any applicable RTP profile. The main security considerations for the RTP packet carrying the RTP payload format defined within this memo are confidentiality, integrity and source authenticity. Confidentiality is achieved by encryption of the RTP payload. Integrity of the RTP packets through suitable cryptographic integrity protection mechanism. Cryptographic systems may also allow the authentication of the source of the payload. A suitable security mechanism for this RTP payload format should provide confidentiality, integrity protection and at least source authentication capable of determining if an RTP packet is from a member of the RTP session or not.
 
-Note that the appropriate mechanism to provide security to RTP and  payloads following this memo may vary. It is dependent on the application, the transport, and the signaling protocol employed.  Therefore a single mechanism is not sufficient, although if suitable  the usage of SRTP [@RFC3711] is recommended. Other mechanism that may be used are IPsec [@RFC4301] and TLS [@RFC4346] (RTP over TCP), but also other alternatives may exist.
+Note that the appropriate mechanism to provide security to RTP and  payloads following this memo may vary. It is dependent on the application, the transport, and the signaling protocol employed.  Therefore a single mechanism is not sufficient, although if suitable  the usage of SRTP [@RFC3711] is recommended. Other mechanism that may be used are IPsec [@RFC4301] and TLS [@RFC5246] (RTP over TCP), but also other alternatives may exist.
 
 
 <reference anchor='ETSI-TETRA-ISI' target='http://www.etsi.org/deliver/etsi_ts/100300_100399/1003920306/01.01.01_60/ts_1003920306v010101p.pdf'>
@@ -389,6 +387,19 @@ Note that the appropriate mechanism to provide security to RTP and  payloads fol
             </address>
         </author>
         <date year='2014'/>
+    </front>
+</reference>
+
+<reference anchor='RMCAT' target='https://datatracker.ietf.org/wg/rmcat/about/'>
+    <front>
+        <title>RTP Media Congestion Avoidance Techniques (rmcat) Working Grooup</title>
+        <author fullname='IETF'>
+            <organization>RTP Media Congestion Avoidance Techniques (rmcat) Working Group</organization>
+            <address>
+                <uri>https://datatracker.ietf.org/wg/rmcat/about/</uri>
+            </address>
+        </author>
+        <date year='2018'/>
     </front>
 </reference>
 
