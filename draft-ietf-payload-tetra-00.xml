@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rfc SYSTEM 'rfc2629.dtd' []>
+<rfc ipr="trust200902" category="std" docName="draft-ietf-payload-tetra-00">
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="yes"?>
+<?rfc private=""?>
+<?rfc topblock="yes"?>
+<?rfc comments="no"?>
+<front>
+<title abbrev="RTP Payload Format for TETRA Audio codec">RTP Payload Format for the TETRA Audio Codec</title>
+
+<author initials="" surname="Reisenbauer" fullname="Andreas Reisenbauer">
+<organization abbrev="Frequentis">Frequentis AG</organization>
+<address>
+<postal>
+<street>Innovationsstr. 1</street>
+<city>Vienna</city>
+<code>1100</code>
+<country>Austria</country>
+<region></region>
+</postal>
+<phone></phone>
+<email>andreas.reisenbauer@frequentis.com</email>
+<uri></uri>
+</address>
+</author>
+<author initials="" surname="Brandhuber" fullname="Udo Brandhuber">
+<organization abbrev="eurofunk">eurofunk Kappacher GmbH</organization>
+<address>
+<postal>
+<street></street>
+<city></city>
+<code></code>
+<country>Germany</country>
+<region></region>
+</postal>
+<phone></phone>
+<email>ubrandhuber@eurofunk.com</email>
+<uri></uri>
+</address>
+</author>
+<author initials="" surname="Hagedorn" fullname="Joachim Hagedorn">
+<organization abbrev="Hagedorn">Hagedorn Informationssysteme GmbH</organization>
+<address>
+<postal>
+<street></street>
+<city></city>
+<code></code>
+<country>Germany</country>
+<region></region>
+</postal>
+<phone></phone>
+<email>joachim@hagedorn-infosysteme.de</email>
+<uri></uri>
+</address>
+</author>
+<author initials="" surname="Höhnsch" fullname="Klaus-Peter Höhnsch">
+<organization abbrev="T-Systems">T-Systems International GmbH</organization>
+<address>
+<postal>
+<street></street>
+<city></city>
+<code></code>
+<country>Germany</country>
+<region></region>
+</postal>
+<phone></phone>
+<email>klaus-peter.hoehnsch@t-systems.com</email>
+<uri></uri>
+</address>
+</author>
+<author initials="" surname="Wenk" fullname="Stefan Wenk">
+<organization abbrev="Frequentis">Frequentis AG</organization>
+<address>
+<postal>
+<street>Innovationsstr. 1</street>
+<city>Vienna</city>
+<code>1100</code>
+<country>Austria</country>
+<region></region>
+</postal>
+<phone></phone>
+<email>stefan.wenk@frequentis.com</email>
+<uri></uri>
+</address>
+</author>
+<date year="2018" month="April" day="22"/>
+
+<area>Internet</area>
+<workgroup>payload</workgroup>
+
+
+<abstract>
+<t>This document specifies a Real-time Transport Protocol (RTP) payload format for TETRA encoded speech signals. The payload format is designed to be able to interoperate with existing TETRA transport formats on non-IP networks. A media type registration is included, specifying the use of the RTP payload format and the storage format.
+</t>
+</abstract>
+
+
+</front>
+
+<middle>
+
+<section anchor="introduction" title="Introduction">
+<t>This document specifies the payload format for packetization of TErrestial Trunked Radio (TETRA) encoded speech signals <xref target="ETSI-TETRA-Codec"/> into the Real-time Transport Protocol (RTP) <xref target="RFC3550"/>. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section <xref target="MediaFormatBackground"/>.
+</t>
+<t>The payload format itself is specified in Section <xref target="PayloadFormat"/>.
+</t>
+</section>
+
+<section anchor="conventions-used-in-this-document" title="Conventions Used In This Document">
+<t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this document are to be interpreted as described in <xref target="RFC2119"/> when they appear in ALL CAPS. These words may also appear in this document in lower case as plain English words, absent their normative meanings.
+</t>
+<t>The following acronyms are used in this document:
+</t>
+<t>
+<list style="symbols">
+<t>ETSI: European Telecommunications Standards Institute</t>
+<t>TETRA: TErrestial Trunked Radio</t>
+</list>
+</t>
+<t>The byte order used in this document is network byte order, i.e., the most significant byte first. The bit order is also the most significant bit first. This is presented in all figures as having the most significant bit leftmost on a line and with the lowest number. Some bit fields may wrap over multiple lines in which cases the bits on the first line are more significant than the bits on the next line.
+</t>
+<t>Best current practices for writing an RTP payload format specification were followed <xref target="RFC2736"/> updated with <xref target="RFC8088"/>.
+</t>
+</section>
+
+<section anchor="MediaFormatBackground" title="Media Format Background">
+<t>The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of theses 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. Codec payload serialisation within the traditional circuit mode based TETRA system is specified for TDM lines with 2048 kBit/s. For this purpose two optional formats are defined <xref target="ETSI-TETRA-Codec"/>, the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats defer mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
+</t>
+</section>
+
+<section anchor="PayloadFormat" title="Payload format">
+<t>The RTP payload format is designed in such a way that it can carry the information needed to map the FSTE and OSTE format from <xref target="ETSI-TETRA-ISI"/>. The RTP format is defined such that both of the independent sub-blocks can be transferred separately or together within one RTP packet. Both of them contain the same information in terms of control bits - the information is propagated redundantly. This redundancy is driven by on one hand to simplify the encoding process in direction from E1 to RTP on the other to provide the option to go for either 30ms or 60ms packet size. The redundant information  SHALL be propagated consistently equal - otherwise the behavior of the receiver is unspecified.
+The payload format is chosen such that the TETRA data bits are octet aligned.
+</t>
+
+<section anchor="rtp-header-usage" title="RTP Header Usage">
+<t>The format of the RTP header is specified in <xref target="RFC3550"/>.  The use of the fields of the RTP header by the TETRA payload format is consistent with that specification.
+</t>
+<t>The payload length of TETRA is an integer number of octets; therefore, no padding is necessary.
+</t>
+<t>The timestamp, sequence number, and marker bit (M) of the RTP header are used in accordance with Section 4.1 of <xref target="RFC3551"/>.
+</t>
+<t>The RTP payload type for Tetra is to be assigned dynamically.
+</t>
+</section>
+
+<section anchor="payload-layout" title="Payload layout">
+
+<figure align="center"><artwork align="center">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork></figure>
+</section>
+
+<section anchor="payload-header" title="Payload Header">
+
+<section anchor="i-bit-frame-indicator" title="I bit: Frame Indicator">
+<t>1: The following frame contains a first block of two sub-blocks
+</t>
+<t>0: The following frame contains a separated sub-block. A sub-block marked as such could either be a second sub-block, or an independent block, which does not have a relation with any first block. To distinguish between the one and the other the information of the Control bits has to be evaluated.
+</t>
+</section>
+
+<section anchor="f-bit-frame-type" title="F bit: Frame Type">
+<texttable>
+<ttcol align="center">Value</ttcol>
+<ttcol align="center">Frame contains</ttcol>
+
+<c>0</c><c>FSTE encoded data</c>
+<c>1</c><c>OSTE encoded data</c>
+</texttable>
+</section>
+
+<section anchor="ctrl-control-bit5-bits" title="CTRL: Control bit(5 bits)">
+<t>Ctrl 1..3 according table 2 of <xref target="ETSI-TETRA-ISI"/>.
+</t>
+<texttable>
+<ttcol align="center">Value</ttcol>
+<ttcol align="center">Sub block 1</ttcol>
+<ttcol align="center">Sub block 2</ttcol>
+
+<c>000</c><c>normal</c><c>normal</c>
+<c>001</c><c>C stolen</c><c>normal</c>
+<c>010</c><c>U stolen</c><c>normal</c>
+<c>011</c><c>C stolen</c><c>C stolen</c>
+<c>100</c><c>C stolen</c><c>U stolen</c>
+<c>101</c><c>U stolen</c><c>C stolen</c>
+<c>110</c><c>U stolen</c><c>U stolen</c>
+<c>111</c><c>O&amp;M ISI block</c><c></c>
+</texttable>
+<t>Ctrl 4..5 according table 3 of <xref target="ETSI-TETRA-ISI"/>.
+</t>
+<texttable>
+<ttcol align="center">Value</ttcol>
+<ttcol align="center">Sub block 1</ttcol>
+<ttcol align="center">Sub block 2</ttcol>
+
+<c>00</c><c>BFI no errors</c><c>BFI no errors</c>
+<c>01</c><c>BFI no errors</c><c>BFI with error(s)</c>
+<c>10</c><c>BFI with error(s)</c><c>BFI no error(s)</c>
+<c>11</c><c>BFI with error(s)</c><c>BFI with error(s)</c>
+</texttable>
+<t>NOTE: The meaning of C4 and C5 is outside the scope of the present
+</t>
+</section>
+
+<section anchor="c-bit-failed-crypto-operation-indication" title="C bit: Failed Crypto operation indication">
+<t>This bit may be set to &quot;1&quot; if a decryption (encrypted audio along the circuit switched mobile network, decryption at the RTP sender forwarding this audio) operation could not be performed successfully for the specific half-block. Consequently, the encryption status of the half-block audio data is unknown. Implementation of an RTP receiver has to take into account &quot;C bit&quot; when forwarding such TETRA audio data (either to a decoder directly or via TETRA infrastructure to a TETRA mobile unit), the contained audio might be scrambled - depending if the audio originally was generated as a plain-override half-block or as an encrypted half-block.
+</t>
+</section>
+
+<section anchor="framenr-fn-5-bits" title="FRAME_NR: FN (5 bits)">
+<t>Those bits contain an uplink frame number as defined in table 8 of <xref target="ETSI-TETRA-ISI"/>.
+If no frame number is available the FRAME_NR value  SHALL be set to 00000.
+</t>
+</section>
+
+<section anchor="r-audio-signal-relevance-3-bits" title="R: Audio Signal Relevance (3 bits)">
+<t>The Audio Signal Relevance bits contain information about the Relevance of the voice packet contained here.
+</t>
+<t>R 1
+</t>
+<t>0: no audio signal relevance propagated (R2 and R3 do not contain any valid information)
+</t>
+<t>1: audio signal relevance propagated in R2 and R3
+</t>
+<t>R 2..3
+According to table 1 of <xref target="BDBOS-BIP20"/>
+</t>
+<texttable>
+<ttcol align="center">value</ttcol>
+<ttcol align="center">relevance</ttcol>
+
+<c>00</c><c>no audio signal relevance (level ? -72 dBm0)</c>
+<c>01</c><c>low audio signal relevance (-52dBm0 ? level &gt; -72dBm0)</c>
+<c>10</c><c>medium audio signal relevance (-32dBm0 ? level &gt; -52dBm0)</c>
+<c>11</c><c>high audio signal relevance (0dBm0 ? level &gt; -32dBm0)</c>
+</texttable>
+</section>
+
+<section anchor="s-spare-7-bits" title="S: Spare (7 bits)">
+<t>Those bits are reserved for future use and set to &quot;0&quot; currently.
+</t>
+</section>
+</section>
+
+<section anchor="payload-data" title="Payload Data">
+<t>Reference <xref target="ETSI-TETRA-ISI"/> contains the definition for the generation of the codec data. Data bits D1..D137 in chapter 8 correspond to the &quot;Bit number in speech frame&quot; row of table 4 of <xref target="ETSI-TETRA-ISI"/>.
+</t>
+<t>The payload itself contains TETRA ACELP coded speech information encoded according to table 4 of <xref target="ETSI-TETRA-Codec"/>.
+</t>
+</section>
+</section>
+
+<section anchor="payload-example" title="Payload example">
+<t>The following example shows how a first and a consecutive 30 ms frame
+is combined into a single 60ms RTP packet. Note: This example shows of usage of
+OSTE mapping.
+</t>
+
+<figure align="center"><artwork align="center">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1|1|  CTRL   |C|0|0|0|0|0|0|0|0|D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|1|  CTRL   |C|0|0|0|0|0|0|0|0|D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork></figure>
+<t>Both halves of information contain exact the same CTRL bits
+</t>
+</section>
+
+<section anchor="congestion-control-considerations" title="Congestion Control Considerations">
+<t>Tetra uses a fixed bitrate which cannot be adjusted at all.
+</t>
+<t>Since UDP does not provide congestion control, applications that use RTP over UDP SHOULD implement their own congestion control above the UDP layer RFC8085 <xref target="RFC8085"/> and MAY also implement a transport circuit breaker RFC8083 <xref target="RFC8083"/>.  Work in the RMCAT working group <xref target="RMCAT"/> describes the interactions and conceptual interfaces necessary between the application components that relate to congestion control, including the RTP layer, the higher-level media codec control layer, and the lower-level transport interface, as well as components dedicated to congestion control functions.
+</t>
+<t>Congestion control for RTP  SHALL be used in accordance with RFC 3550 <xref target="RFC3550"/>, and with any applicable RTP profile; e.g., RFC 3551 <xref target="RFC3551"/>. An additional requirement if best-effort service is being used is: users of this payload format  MUST monitor packet loss to ensure that the packet loss rate is within acceptable parameters.
+</t>
+</section>
+
+<section anchor="payload-format-parameters" title="Payload Format Parameters">
+<t>This RTP payload format is identified using one media subtype (audio/TETRA) which is registered in accordance with RFC 4855 <xref target="RFC4855"/> and per media type registration template from RFC 6838 <xref target="RFC6838"/>.
+</t>
+
+<section anchor="Media-Type-Definition" title="Media Type Definition">
+<t>The media type for the TETRA codec is expected to be allocated from the IETF tree once this draft turns into an RFC. This media type registration covers both real-time transfer via RTP and non-real-time transfers via stored files.
+</t>
+<t>
+<list style="hanging">
+<t hangText="Media Type name:">
+<vspace />
+audio</t>
+<t hangText="Media Subtype name:">
+<vspace />
+TETRA</t>
+<t hangText="Required parameters:">
+<vspace />
+none</t>
+</list>
+</t>
+<t>Optional parameters:
+</t>
+<t>These parameters apply to RTP transfer only.
+</t>
+<t>
+<list style="hanging">
+<t hangText="maxptime:">
+<vspace />
+The maximum amount of media which can be encapsulated in a payload packet, expressed as time in milliseconds. The time is calculated as the sum of the time that the media present in the packet represents. The time  SHOULD be an integer multiple of the frame size. If this parameter is not present, the sender  MAY encapsulate any number of speech frames into one RTP packet.</t>
+<t hangText="ptime:">
+<vspace />
+see RFC 4566 <xref target="RFC4566"/>.</t>
+<t hangText="Security considerations:">
+<vspace />
+See Section <xref target="Security"/> of RFC XXXX.
+  [RFC Editor: Upon publication as an RFC, please replace &quot;XXXX&quot; with the number assigned to this document and remove this note.]</t>
+</list>
+</t>
+<t>Interoperability considerations:
+</t>
+<t>Published specification:
+</t>
+<t>Applications that use this media type:
+</t>
+<t>This media type is used in applications needing transport or storage of encoded voice. Some examples include; Voice over IP, streaming media, voice messaging, and voice recording on recording systems.
+</t>
+<t>
+<list style="hanging">
+<t hangText="Intended usage:">
+<vspace />
+COMMON</t>
+</list>
+</t>
+</section>
+</section>
+
+<section anchor="mapping-to-sdp" title="Mapping to SDP">
+<t>The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol <xref target="RFC4566"/>, which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
+</t>
+<t>
+<list style="hanging">
+<t hangText="Media Type name:">
+<vspace />
+audio</t>
+<t hangText="Media subtype name:">
+<vspace />
+TETRA</t>
+<t hangText="Required parameters:">
+<vspace />
+none</t>
+<t hangText="Optional parameters:">
+<vspace />
+none</t>
+<t hangText="Mapping Parameters into SDP">
+<vspace />
+The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol <xref target="RFC4566"/>, which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
+<list style="symbols">
+<t>The media type (&quot;audio&quot;) goes in SDP &quot;m=&quot; as the media name.</t>
+<t>The media subtype (payload format name) goes in SDP &quot;a=rtpmap&quot; as the encoding name. The RTP clock rate in &quot;a=rtpmap&quot; MUST be 8000.</t>
+<t>The parameters &quot;ptime&quot; and &quot;maxptime&quot; go in the SDP &quot;a=ptime&quot; and &quot;a=maxptime&quot; attributes, respectively.</t>
+<t>Any remaining parameters go in the SDP &quot;a=fmtp&quot; attribute by copying them directly from the media type parameter string as a semicolon-separated list of parameter=value pairs.</t>
+</list></t>
+</list>
+</t>
+<t>Here is an example SDP session of usage of TETRA:
+</t>
+
+<figure align="center"><artwork align="center">
+m=audio 49120 RTP/AVP 99
+a=rtpmap:99 TETRA/8000
+a=maxptime:60
+a=ptime:60
+</artwork></figure>
+
+<section anchor="offeranswer-considerations" title="Offer/Answer Considerations">
+<t>The following considerations apply when using SDP Offer-Answer procedures to negotiate the use of TETRA payload in RTP:
+</t>
+<t>
+<list style="symbols">
+<t>In most cases, the parameters &quot;maxptime&quot; and &quot;ptime&quot; will not affect interoperability; however, the setting of the parameters can affect the performance of the application. The SDP offer-answer handling of the &quot;ptime&quot; and &quot;maxptime&quot; parameter is described in RFC3264 <xref target="RFC3264"/>.</t>
+<t>Integer multiples of 30ms SHALL be used for ptime.  It is recommended to use packet size of 60ms. Even if there is no good reason why not doing so, there is no need that ptime and maxptime parameters are negotiated symmetrically.</t>
+<t>Any unknown parameter in an offer  SHALL be removed in the answer.</t>
+</list>
+</t>
+</section>
+
+<section anchor="declarative-sdp-considerations" title="Declarative SDP Considerations">
+<t>For declarative media, the &quot;ptime&quot; and &quot;maxptime&quot; parameter specifies the possible variants used by the sender.
+</t>
+</section>
+</section>
+
+<section anchor="iana-considerations" title="IANA Considerations">
+<t>This memo requests that IANA registers [audio/TETRA] from section <xref target="Media-Type-Definition"/>. The media type is also requested to be added to the IANA registry for &quot;RTP Payload Format MIME types&quot; (<eref target="http://www.iana.org/assignments/rtp-parameters"/>).
+</t>
+</section>
+
+<section anchor="Security" title="Security Considerations">
+<t>RTP packets using the payload format defined in this specification are subject to the security considerations discussed in the RTP specification <xref target="RFC3550"/> , and in any applicable RTP profile. The main security considerations for the RTP packet carrying the RTP payload format defined within this memo are confidentiality, integrity and source authenticity. Confidentiality is achieved by encryption of the RTP payload. Integrity of the RTP packets through suitable cryptographic integrity protection mechanism. Cryptographic systems may also allow the authentication of the source of the payload. A suitable security mechanism for this RTP payload format should provide confidentiality, integrity protection and at least source authentication capable of determining if an RTP packet is from a member of the RTP session or not.
+</t>
+<t>Note that the appropriate mechanism to provide security to RTP and  payloads following this memo may vary. It is dependent on the application, the transport, and the signaling protocol employed.  Therefore a single mechanism is not sufficient, although if suitable  the usage of SRTP <xref target="RFC3711"/> is recommended. Other mechanism that may be used are IPsec <xref target="RFC4301"/> and TLS <xref target="RFC5246"/> (RTP over TCP), but also other alternatives may exist.
+</t>
+</section>
+
+</middle>
+<back>
+<references title="Normative References">
+<reference anchor='BDBOS-BIP20'> 
+    <front>
+        <title>BIP 20 QOS Dienstgüte-Parameter BOS-Interoperabilitätsprofil für Endgeräte zur Nutzung im Digitalfunk BOS; Version 2014-04 - Revision 2</title>
+        <author fullname='BDBOS'>
+            <organization>Bundesanstalt für den Digitalfunk der Behörden und Organisationen mit Sicherheitsaufgaben</organization>
+            <address>
+                <uri>http://www.bdbos.bund.de</uri>
+            </address>
+        </author>
+        <date year='2014'/>
+    </front>
+</reference>
+<reference anchor='ETSI-TETRA-Codec' target='http://www.etsi.org/deliver/etsi_en/300300_300399/30039502/01.03.01_60/en_30039502v010301p.pdf'> 
+    <front>
+        <title>EN 300 395-2; Terrestrial Trunked Radio (TETRA); Speech codec for full-rate traffic channel; Part 2: TETRA codec V1.3.1</title>
+        <author fullname='ETSI'>
+            <organization>European Telecommunications Standards Institute</organization>
+            <address>
+                <email>editor@etsi.org</email>
+            </address>
+        </author>
+        <date year='2005'/>
+    </front>
+</reference>
+<reference anchor='ETSI-TETRA-ISI' target='http://www.etsi.org/deliver/etsi_ts/100300_100399/1003920306/01.01.01_60/ts_1003920306v010101p.pdf'>
+    <front>
+        <title>TS 100 392-3-6; Terrestrial Trunked Radio (TETRA); Voice plus Data (V+D); Part 3: Interworking at the Inter-System Interface (ISI); Sub-part 6: Speech format implementation for circuit mode transmission V1.1.1</title>
+        <author fullname='ETSI'>
+            <organization>European Telecommunications Standards Institute</organization>
+            <address>
+                <email>editor@etsi.org</email>
+            </address>
+        </author>
+        <date year='2003'/>
+    </front>
+</reference>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3550.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3551.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4566.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8083.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8085.xml"?>
+</references>
+<references title="Informative References">
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2736.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3264.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3711.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4301.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4855.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5246.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6838.xml"?>
+<?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8088.xml"?>
+<reference anchor='RMCAT' target='https://datatracker.ietf.org/wg/rmcat/about/'>
+    <front>
+        <title>RTP Media Congestion Avoidance Techniques (rmcat) Working Grooup</title>
+        <author fullname='IETF'>
+            <organization>RTP Media Congestion Avoidance Techniques (rmcat) Working Group</organization>
+            <address>
+                <uri>https://datatracker.ietf.org/wg/rmcat/about/</uri>
+            </address>
+        </author>
+        <date year='2018'/>
+    </front>
+</reference>
+</references>
+
+</back>
+</rfc>
