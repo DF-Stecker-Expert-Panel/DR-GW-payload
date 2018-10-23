@@ -104,7 +104,7 @@
 <middle>
 
 <section anchor="introduction" title="Introduction">
-<t>This document specifies the payload format for packetization of TErrestial Trunked Radio (TETRA) encoded speech signals <xref target="ETSI-TETRA-Codec"/> into the Real-time Transport Protocol (RTP) <xref target="RFC3550"/>. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section <xref target="MediaFormatBackground"/>.
+<t>This document specifies the payload format for packetization of TErrestial Trunked RAdio (TETRA) encoded speech signals <xref target="ETSI-TETRA-Codec"/> into the Real-time Transport Protocol (RTP) <xref target="RFC3550"/>. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section <xref target="MediaFormatBackground"/>.
 </t>
 <t>The payload format itself is specified in Section <xref target="PayloadFormat"/>.
 </t>
@@ -118,7 +118,7 @@
 <t>
 <list style="symbols">
 <t>ETSI: European Telecommunications Standards Institute</t>
-<t>TETRA: TErrestial Trunked Radio</t>
+<t>TETRA: TErrestial Trunked RAdio</t>
 </list>
 </t>
 <t>The byte order used in this document is network byte order, i.e., the most significant byte first. The bit order is also the most significant bit first. This is presented in all figures as having the most significant bit leftmost on a line and with the lowest number. Some bit fields may wrap over multiple lines in which cases the bits on the first line are more significant than the bits on the next line.
@@ -128,7 +128,7 @@
 </section>
 
 <section anchor="MediaFormatBackground" title="Media Format Background">
-<t>The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of theses 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. Codec payload serialisation within the traditional circuit mode based TETRA system is specified for TDM lines with 2048 kBit/s. For this purpose two optional formats are defined <xref target="ETSI-TETRA-Codec"/>, the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats defer mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
+<t>The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of these 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. Codec payload serialisation is specified for TDM lines with 2048 kBit/s within traditional circuit mode based TETRA system. For this purpose two optional formats are defined <xref target="ETSI-TETRA-Codec"/>, the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats differ mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
 </t>
 </section>
 
@@ -149,10 +149,53 @@ The payload format is chosen such that the TETRA data bits are octet aligned.
 </section>
 
 <section anchor="payload-layout" title="Payload layout">
+<t>RTP payload is composed of multiple blocks with TETRA audio data. TETRA Audio data itself contains:
+  - Audio Payload Header
+  - Audio Data (137 Bit)
+  - 7 Spare Bits
+</t>
 
 <figure align="center"><artwork align="center">
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork></figure>
+<t>RTP payload can be formed by any integer multiple of 30ms audio using following layout (e.g. 90ms audio payload):
+</t>
+
+<figure align="center"><artwork align="center">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                           D(137)|  S          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |I|F|  CTRL   |C|FRAME_NR |  R  |D(1)                           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -215,7 +258,7 @@ The payload format is chosen such that the TETRA data bits are octet aligned.
 <c>10</c><c>BFI with error(s)</c><c>BFI no error(s)</c>
 <c>11</c><c>BFI with error(s)</c><c>BFI with error(s)</c>
 </texttable>
-<t>NOTE: The meaning of C4 and C5 is outside the scope of the present
+<t>NOTE: The meaning of C4 and C5 is outside the scope of the present document
 </t>
 </section>
 
@@ -225,7 +268,7 @@ The payload format is chosen such that the TETRA data bits are octet aligned.
 </section>
 
 <section anchor="framenr-fn-5-bits" title="FRAME_NR: FN (5 bits)">
-<t>Those bits contain an uplink frame number as defined in table 8 of <xref target="ETSI-TETRA-ISI"/>.
+<t>The frame number bits contain an uplink frame number as defined in table 8 of <xref target="ETSI-TETRA-ISI"/>.
 If no frame number is available the FRAME_NR value  SHALL be set to 00000.
 </t>
 </section>
@@ -254,7 +297,7 @@ According to table 1 of <xref target="BDBOS-BIP20"/>
 </section>
 
 <section anchor="s-spare-7-bits" title="S: Spare (7 bits)">
-<t>Those bits are reserved for future use and set to &quot;0&quot; currently.
+<t>The S bits bits are reserved for future use and set to &quot;0&quot; currently.
 </t>
 </section>
 </section>
@@ -268,9 +311,7 @@ According to table 1 of <xref target="BDBOS-BIP20"/>
 </section>
 
 <section anchor="payload-example" title="Payload example">
-<t>The following example shows how a first and a consecutive 30 ms frame
-is combined into a single 60ms RTP packet. Note: This example shows of usage of
-OSTE mapping.
+<t>The following example shows how a first and a second consecutive 30 ms frame is combined into a single 60ms RTP packet. Note: This example shows the usage of OSTE mapping.
 </t>
 
 <figure align="center"><artwork align="center">
@@ -411,14 +452,14 @@ a=ptime:60
 <t>
 <list style="symbols">
 <t>In most cases, the parameters &quot;maxptime&quot; and &quot;ptime&quot; will not affect interoperability; however, the setting of the parameters can affect the performance of the application. The SDP offer-answer handling of the &quot;ptime&quot; and &quot;maxptime&quot; parameter is described in RFC3264 <xref target="RFC3264"/>.</t>
-<t>Integer multiples of 30ms SHALL be used for ptime.  It is recommended to use packet size of 60ms. Even if there is no good reason why not doing so, there is no need that ptime and maxptime parameters are negotiated symmetrically.</t>
+<t>Integer multiples of 30ms SHALL be used for ptime.  It is recommended to use packet size of 60ms. There is no need that ptime and maxptime parameters are negotiated symmetrically.</t>
 <t>Any unknown parameter in an offer  SHALL be removed in the answer.</t>
 </list>
 </t>
 </section>
 
 <section anchor="declarative-sdp-considerations" title="Declarative SDP Considerations">
-<t>For declarative media, the &quot;ptime&quot; and &quot;maxptime&quot; parameter specifies the possible variants used by the sender.
+<t>For declarative media, the &quot;ptime&quot; and &quot;maxptime&quot; parameter specify the possible variants used by the sender.
 </t>
 </section>
 </section>
