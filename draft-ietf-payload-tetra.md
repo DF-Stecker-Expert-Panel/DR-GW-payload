@@ -251,6 +251,8 @@ value|relevance
  10  |medium audio signal relevance (-32dBm0 ? level > -52dBm0)
  11  |high audio signal relevance (0dBm0 ? level > -32dBm0)    
 
+NOTE: Receiver **SHOULD** consider stolen or erroneous blocks as not available for audio decoding as indicated by control bits independent of audio signal relevance bits.
+
 ### S: Spare (7 bits)
 The S bits bits are reserved for future use and set to "0" currently.
 
