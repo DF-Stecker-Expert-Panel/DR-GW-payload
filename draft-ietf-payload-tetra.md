@@ -305,39 +305,60 @@ This RTP payload format is identified using one media subtype (audio/TETRA) whic
 
 The media type for the TETRA codec is expected to be allocated from the IETF tree once this draft turns into an RFC. This media type registration covers both real-time transfer via RTP and non-real-time transfers via stored files.
 
-Media Type name:
+Type name:
 :   audio
 
-Media Subtype name:
+Subtype name:
 :   TETRA
 
 Required parameters:
 :   none
 
 Optional parameters: 
+:   These parameters apply to RTP transfer only.
+  -  maxptime:
+The maximum amount of media which can be encapsulated in a payload packet, expressed as time in milliseconds. The time is calculated as the sum of the time that the media present in the packet represents. The time  **SHOULD** be an integer multiple of the frame size. If this parameter is not present, the sender  **MAY** encapsulate any number of speech frames into one RTP packet.
 
-These parameters apply to RTP transfer only.
+  -  ptime:
+see RFC 4566 [@!RFC4566].
 
-maxptime:
-:   The maximum amount of media which can be encapsulated in a payload packet, expressed as time in milliseconds. The time is calculated as the sum of the time that the media present in the packet represents. The time  **SHOULD** be an integer multiple of the frame size. If this parameter is not present, the sender  **MAY** encapsulate any number of speech frames into one RTP packet.
-
-ptime:
-:   see RFC 4566 [@!RFC4566].
+Encoding considerations:
+:   This media type is framed and binary according Section 4.8 of RFC 6838 [@RFC6838].
 
 Security considerations:
 :   See Section [] (#Security) of RFC XXXX.
-      [RFC Editor: Upon publication as an RFC, please replace "XXXX" with the number assigned to this document and remove this note.]
+[RFC Editor: Upon publication as an RFC, please replace "XXXX" with the number assigned to this document and remove this note.]
 
-Interoperability considerations:
+Interoperability considerations: N/A
 
 Published specification:
+:   RFC XXXX [RFC Editor: Upon publication as an RFC, please replace "XXXX" with the number assigned to this document and remove this note.]
 
 Applications that use this media type:
+:   This media type is used in applications needing transport or storage of encoded voice. Some examples include; Voice over IP, streaming media, voice messaging, and voice recording on recording systems.
 
-This media type is used in applications needing transport or storage of encoded voice. Some examples include; Voice over IP, streaming media, voice messaging, and voice recording on recording systems.
+Additional Information:
+
+    - Deprecated alias names for this type: N/A
+    - Magic number(s): N/A
+    - File extension(s): N/A
+    - Macintosh file type code(s): N/A
+
+Person & email address to contact for further information:
+: Andreas Reisenbauer <andreas.reisenbauer@frequentis.com>
+    IETF Payload Working Group <payload@ietf.org>
 
 Intended usage:
-:  COMMON
+:   COMMON
+
+Restrictions on usage:
+:   This media type depends on RTP framing and hence is only defined for transfer via RTP RFC 3550 [@!RFC3550]. Transport within other framing protocols is not defined at this time.
+
+Author:
+:   Andreas Reisenbauer  <andreas.reisenbauer@frequentis.com>
+
+Change controller:
+:   The IETF PAYLOAD Working Group, or other party as designated by the IESG.
 
 # Mapping to SDP
 The information carried in the media type specification has a specific mapping to fields in the Session Description Protocol [@!RFC4566], which is commonly used to describe RTP sessions. When SDP is used to specify sessions employing the TETRA codec, the mapping is as follows:
