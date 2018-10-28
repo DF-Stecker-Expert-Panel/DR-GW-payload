@@ -89,7 +89,7 @@ This document specifies a Real-time Transport Protocol (RTP) payload format for 
 
 # Introduction
 
-This document specifies the payload format for packetization of TErrestial Trunked RAdio (TETRA) encoded speech signals [@!ETSI-TETRA-Codec] into the Real-time Transport Protocol (RTP) [@!RFC3550]. The payload format supports transmission of multiple channels, multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section [](#MediaFormatBackground).
+This document specifies the payload format for packetization of TErrestial Trunked RAdio (TETRA) encoded speech signals [@!ETSI-TETRA-Codec] into the Real-time Transport Protocol (RTP) [@!RFC3550]. The payload format supports transmission of multiple frames per payload, robustness against packet loss, and interoperation with existing TETRA transport formats on non-IP networks, as described in Section [](#MediaFormatBackground).
 
 The payload format itself is specified in Section [](#PayloadFormat). 
 
