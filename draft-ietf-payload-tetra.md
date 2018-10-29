@@ -354,7 +354,7 @@ Intended usage:
 :   COMMON
 
 Restrictions on usage:
-:   This media type depends on RTP framing and hence is only defined for transfer via RTP RFC 3550 [@!RFC3550]. Transport within other framing protocols is not defined at this time.
+:   This media subtype depends on RTP framing and hence is only defined for transfer via RTP RFC 3550 [@!RFC3550]. Transport within other framing protocols is not defined at this time.
 
 Author:
 :   Andreas Reisenbauer  <andreas.reisenbauer@frequentis.com>
