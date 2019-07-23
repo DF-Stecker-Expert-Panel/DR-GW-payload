@@ -9,10 +9,10 @@
     Title = "RTP Payload Format for the TETRA Audio Codec"
     abbrev = "RTP Payload Format for TETRA Audio codec"
     category = "std"
-    docName = "draft-ietf-payload-tetra-02"
+    docName = "draft-ietf-payload-tetra-03"
     ipr= "trust200902"
     area = "Internet"
-    date = 2019-01-23T12:00:00Z
+    date = 2019-07-23T22:00:00Z
     workgroup = "payload"
 
     [pi]
