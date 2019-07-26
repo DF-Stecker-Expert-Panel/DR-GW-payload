@@ -12,7 +12,7 @@
     docName = "draft-ietf-payload-tetra-03"
     ipr= "trust200902"
     area = "Internet"
-    date = 2019-07-23T22:00:00Z
+    date = 2019-07-26T20:00:00Z
     workgroup = "payload"
 
     [pi]
@@ -217,9 +217,9 @@ Ctrl 4..5 derived from the information propagated according table 5.7 of [@!ETSI
 
 Value|Sub block 1            |Sub block 2      
 -----|-----------------------|-----------------------
-  00 |no bad frame indicator |no bad frame indicator    
+  00 |no bad frame indicator |no bad frame indicator
   01 |no bad frame indicator |bad frame indicator(s)
-  10 |bad frame indicator(s) |no bad frame indicator  
+  10 |bad frame indicator(s) |no bad frame indicator
   11 |bad frame indicator(s) |bad frame indicator(s)
 
 NOTE: The interpretation of C4 and C5 is outside the scope of the present document

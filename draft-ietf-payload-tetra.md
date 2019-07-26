@@ -9,10 +9,10 @@
     Title = "RTP Payload Format for the TETRA Audio Codec"
     abbrev = "RTP Payload Format for TETRA Audio codec"
     category = "std"
-    docName = "draft-ietf-payload-tetra-02"
+    docName = "draft-ietf-payload-tetra-03"
     ipr= "trust200902"
     area = "Internet"
-    date = 2019-01-23T12:00:00Z
+    date = 2019-07-26T20:00:00Z
     workgroup = "payload"
 
     [pi]
@@ -110,7 +110,7 @@ Best current practices for writing an RTP payload format specification were foll
 The TETRA codec is used as vocoder for TETRA systems. The TETRA codec is designed for compressing 30ms of audio speech data into 137 bits. The TETRA codec is designed in such a way that on the air interface two of these 30ms samples are transported together (sub-block 1 and sub-block 2). The codec allows that data of the first 30ms voice frame can be stolen and used for other purposes, e.g. for the exchange of dynamically updated key-material in end-to-end encrypted voice sessions. Codec payload serialisation is specified for TDM lines with 2048 kBit/s within traditional circuit mode based TETRA system. For this purpose two optional formats are defined [@!ETSI-TETRA-Codec], the first format is called FSTE (First Speech Transport Encoding Format), the other format is called OSTE (Optimized Speech Transport Encoding Format). These two formats differ mainly insofar that the OSTE format transports an additional 5 bit frame number, which provides timing information from the air interface to the receiving side in order to save the need for buffering due to different transports speed on air and in 64 kbit/s circuit switched networks. The RTP payload format is defined such that the value of this frame number can be transported.
 
 # Payload format {#PayloadFormat}
-The RTP payload format is designed in such a way that it can carry the information needed to map the FSTE and OSTE format from [@!ETSI-TETRA-ISI]. The RTP format is defined such that both of the independent sub-blocks can be transferred separately or together within one RTP packet. Both of them contain the same information in terms of control bits - the information is propagated redundantly. This redundancy is driven by on one hand to simplify the encoding process in direction from E1 to RTP on the other to provide the option to go for either 30ms or 60ms packet size. The redundant information  **SHALL** be propagated consistently equal - otherwise the behavior of the receiver is unspecified.
+The RTP payload format is designed in such a way that it can carry the information needed to map the audio and control payload from [@!ETSI-TETRA-ISI]. The RTP format is defined such that both of the independent sub-blocks can be transferred separately or together within one RTP packet. Both of them contain the same information in terms of control bits - the information is propagated redundantly. This redundancy is driven by on one hand to simplify the encoding process in direction from E1 to RTP on the other to provide the option to go for either 30ms or 60ms packet size. The redundant information  **SHALL** be propagated consistently equal - otherwise the behavior of the receiver is unspecified.
 The payload format is chosen such that the TETRA data bits are octet aligned. 
 
 ## RTP Header Usage
@@ -200,7 +200,7 @@ Value|Frame contains
 
 ### CTRL: Control bit(5 bits)
 
-Ctrl 1..3 according table 2 of [@!ETSI-TETRA-ISI].
+Ctrl 1..3 derived from the information propagated according table 5.7 of [@!ETSI-TETRA-ISI].
 
 Value|Sub block 1|Sub block 2
 -----|-----------|-----------
@@ -213,22 +213,22 @@ Value|Sub block 1|Sub block 2
 110  |U stolen   |U stolen   
 111  |O&M ISI block          
 
-Ctrl 4..5 according table 3 of [@!ETSI-TETRA-ISI].
+Ctrl 4..5 derived from the information propagated according table 5.7 of [@!ETSI-TETRA-ISI].
 
-Value|Sub block 1      |Sub block 2      
------|-----------------|-----------------
-  00 |BFI no errors    |BFI no errors    
-  01 |BFI no errors    |BFI with error(s)
-  10 |BFI with error(s)|BFI no error(s)  
-  11 |BFI with error(s)|BFI with error(s)
+Value|Sub block 1            |Sub block 2      
+-----|-----------------------|-----------------------
+  00 |no bad frame indicator |no bad frame indicator
+  01 |no bad frame indicator |bad frame indicator(s)
+  10 |bad frame indicator(s) |no bad frame indicator
+  11 |bad frame indicator(s) |bad frame indicator(s)
 
-NOTE: The meaning of C4 and C5 is outside the scope of the present document
+NOTE: The interpretation of C4 and C5 is outside the scope of the present document
 
 ### C bit: Failed Crypto operation indication
 This bit may be set to "1" if a decryption (encrypted audio along the circuit switched mobile network, decryption at the RTP sender forwarding this audio) operation could not be performed successfully for the specific half-block. Consequently, the encryption status of the half-block audio data is unknown. Implementation of an RTP receiver has to take into account "C bit" when forwarding such TETRA audio data (either to a decoder directly or via TETRA infrastructure to a TETRA mobile unit), the contained audio might be scrambled - depending if the audio originally was generated as a plain-override half-block or as an encrypted half-block.
 
 ### FRAME_NR: FN (5 bits)
-The frame number bits contain an uplink frame number as defined in table 8 of [@!ETSI-TETRA-ISI].
+The frame number bits contain an uplink frame number as defined in table 5.3 of [@!ETSI-TETRA-ISI].
 If no frame number is available the FRAME_NR value  **SHALL** be set to 00000.
 
 ### R: Audio Signal Relevance (3 bits)
@@ -257,8 +257,6 @@ NOTE: Receiver **SHOULD** consider stolen or erroneous blocks as not available f
 The S bits bits are reserved for future use and set to "0" currently.
 
 ## Payload Data
-Reference [@!ETSI-TETRA-ISI] contains the definition for the generation of the codec data. Data bits D1..D137 in chapter 8 correspond to the "Bit number in speech frame" row of table 4 of [@!ETSI-TETRA-ISI].
-
 The payload itself contains TETRA ACELP coded speech information encoded according to table 4 of [@!ETSI-TETRA-Codec].
 
 
@@ -414,16 +412,16 @@ RTP packets using the payload format defined in this specification are subject t
 Note that the appropriate mechanism to provide security to RTP and  payloads following this memo may vary. It is dependent on the application, the transport, and the signaling protocol employed.  Therefore a single mechanism is not sufficient, although if suitable  the usage of SRTP [@RFC3711] is recommended. Other mechanism that may be used are IPsec [@RFC4301] and TLS [@RFC5246] (RTP over TCP), but also other alternatives may exist.
 
 
-<reference anchor='ETSI-TETRA-ISI' target='http://www.etsi.org/deliver/etsi_ts/100300_100399/1003920306/01.01.01_60/ts_1003920306v010101p.pdf'>
+<reference anchor='ETSI-TETRA-ISI' target='https://www.etsi.org/deliver/etsi_ts/100300_100399/1003920308/01.03.01_60/ts_1003920308v010301p.pdf'>
     <front>
-        <title>TS 100 392-3-6; Terrestrial Trunked Radio (TETRA); Voice plus Data (V+D); Part 3: Interworking at the Inter-System Interface (ISI); Sub-part 6: Speech format implementation for circuit mode transmission V1.1.1</title>
+        <title>TS 100 392-3-8; Terrestrial Trunked Radio (TETRA); Voice plus Data (V+D); Part 3: Interworking at the Inter-System Interface (ISI); Sub-part 8: Generic Speech Format Implementation V1.3.1</title>
         <author fullname='ETSI'>
             <organization>European Telecommunications Standards Institute</organization>
             <address>
                 <email>editor@etsi.org</email>
             </address>
         </author>
-        <date year='2003'/>
+        <date year='2018'/>
     </front>
 </reference>
 
